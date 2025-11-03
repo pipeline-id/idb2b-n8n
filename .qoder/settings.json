@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "ask": [
+      "Read(!/home/christmantoro/Github/idb2b-n8n/**)",
+      "Edit(!/home/christmantoro/Github/idb2b-n8n/**)"
+    ],
+    "allow": [
+      "Read(/home/christmantoro/Github/idb2b-n8n/**)",
+      "Edit(/home/christmantoro/Github/idb2b-n8n/**)"
+    ]
+  },
+  "memoryImport": {},
+  "monitoring": {}
+}
