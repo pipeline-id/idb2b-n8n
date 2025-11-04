@@ -28,6 +28,25 @@ interface IDB2BContact {
 	}>;
 }
 
+interface IDB2BLead {
+	id?: string;
+	owner_id?: string;
+	name: string;
+	website?: string;
+	description?: string;
+	status_id?: string;
+	source_id?: string;
+	size_id?: string;
+	industry_id?: string;
+	main_contact_id?: string;
+	contact_name?: string;
+	contact_email?: string;
+	contact_phone_number?: string;
+	organization_id?: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
 interface IDB2BLoginResponse {
 	data: {
 		session: {
@@ -316,6 +335,16 @@ function validateContactData(name: string, email: string): void {
 	}
 }
 
+function validateLeadData(name: string): void {
+	if (!name || typeof name !== 'string' || name.trim().length === 0) {
+		throw new Error('Lead name is required and must be a non-empty string');
+	}
+
+	if (name.trim().length > 255) {
+		throw new Error('Lead name cannot exceed 255 characters');
+	}
+}
+
 function safeJsonParse(jsonString: string, fieldName: string): any {
 	if (!jsonString || typeof jsonString !== 'string') {
 		throw new Error(`${fieldName} must be a valid JSON string`);
@@ -402,6 +431,10 @@ export class IDB2B implements INodeType {
 						value: 'contact',
 					},
 					{
+						name: 'Lead',
+						value: 'lead',
+					},
+					{
 						name: 'Custom',
 						value: 'custom',
 					},
@@ -430,6 +463,32 @@ export class IDB2B implements INodeType {
 						value: 'create',
 						action: 'Create a contact',
 						description: 'Create a new contact',
+					},
+				],
+				default: 'getAll',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['lead'],
+					},
+				},
+				options: [
+					{
+						name: 'Get All',
+						value: 'getAll',
+						action: 'Get all leads',
+						description: 'Retrieve all leads',
+					},
+					{
+						name: 'Create',
+						value: 'create',
+						action: 'Create a lead',
+						description: 'Create a new lead',
 					},
 				],
 				default: 'getAll',
@@ -586,6 +645,250 @@ export class IDB2B implements INodeType {
 										required: true,
 									},
 								],
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['lead'],
+						operation: ['create'],
+					},
+				},
+				description: 'Lead name',
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['lead'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Owner ID',
+						name: 'owner_id',
+						type: 'string',
+						default: '',
+						description: 'ID of the user who owns this lead',
+					},
+					{
+						displayName: 'Website',
+						name: 'website',
+						type: 'string',
+						default: '',
+						description: 'Lead website URL',
+					},
+					{
+						displayName: 'Description',
+						name: 'description',
+						type: 'string',
+						default: '',
+						description: 'Lead description',
+					},
+					{
+						displayName: 'Status ID',
+						name: 'status_id',
+						type: 'string',
+						default: '',
+						description: 'Lead status ID',
+					},
+					{
+						displayName: 'Source ID',
+						name: 'source_id',
+						type: 'string',
+						default: '',
+						description: 'Lead source ID',
+					},
+					{
+						displayName: 'Size ID',
+						name: 'size_id',
+						type: 'string',
+						default: '',
+						description: 'Lead size ID',
+					},
+					{
+						displayName: 'Industry ID',
+						name: 'industry_id',
+						type: 'string',
+						default: '',
+						description: 'Lead industry ID',
+					},
+					{
+						displayName: 'Main Contact ID',
+						name: 'main_contact_id',
+						type: 'string',
+						default: '',
+						description: 'ID of the main contact for this lead',
+					},
+					{
+						displayName: 'Contact Name',
+						name: 'contact_name',
+						type: 'string',
+						default: '',
+						description: 'Name of the main contact',
+					},
+					{
+						displayName: 'Contact Email',
+						name: 'contact_email',
+						type: 'string',
+						default: '',
+						description: 'Email of the main contact',
+					},
+					{
+						displayName: 'Contact Phone Number',
+						name: 'contact_phone_number',
+						type: 'string',
+						default: '',
+						description: 'Phone number of the main contact',
+					},
+				],
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				default: 50,
+				description: 'Maximum number of leads to return',
+				displayOptions: {
+					show: {
+						resource: ['lead'],
+						operation: ['getAll'],
+					},
+				},
+			},
+			{
+				displayName: 'Page',
+				name: 'page',
+				type: 'number',
+				default: 1,
+				description: 'Page number to retrieve',
+				displayOptions: {
+					show: {
+						resource: ['lead'],
+						operation: ['getAll'],
+					},
+				},
+			},
+			{
+				displayName: 'Fields to Return',
+				name: 'fields',
+				type: 'multiOptions',
+				default: [],
+				description: 'Select specific fields to return (leave empty for all fields)',
+				displayOptions: {
+					show: {
+						resource: ['lead'],
+						operation: ['getAll'],
+					},
+				},
+				options: [
+					{
+						name: 'ID',
+						value: 'id',
+					},
+					{
+						name: 'Name',
+						value: 'name',
+					},
+					{
+						name: 'Website',
+						value: 'website',
+					},
+					{
+						name: 'Description',
+						value: 'description',
+					},
+					{
+						name: 'Owner ID',
+						value: 'owner_id',
+					},
+					{
+						name: 'Status ID',
+						value: 'status_id',
+					},
+					{
+						name: 'Source ID',
+						value: 'source_id',
+					},
+					{
+						name: 'Size ID',
+						value: 'size_id',
+					},
+					{
+						name: 'Industry ID',
+						value: 'industry_id',
+					},
+					{
+						name: 'Main Contact ID',
+						value: 'main_contact_id',
+					},
+					{
+						name: 'Contact Name',
+						value: 'contact_name',
+					},
+					{
+						name: 'Contact Email',
+						value: 'contact_email',
+					},
+					{
+						name: 'Contact Phone Number',
+						value: 'contact_phone_number',
+					},
+					{
+						name: 'Created At',
+						value: 'created_at',
+					},
+					{
+						name: 'Updated At',
+						value: 'updated_at',
+					},
+				],
+			},
+			{
+				displayName: 'Query Parameters',
+				name: 'queryParameters',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Parameter',
+				description: 'Additional query parameters',
+				displayOptions: {
+					show: {
+						resource: ['lead'],
+						operation: ['getAll'],
+					},
+				},
+				options: [
+					{
+						name: 'parameter',
+						displayName: 'Parameter',
+						values: [
+							{
+								displayName: 'Name',
+								name: 'name',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
 							},
 						],
 					},
@@ -870,6 +1173,70 @@ export class IDB2B implements INodeType {
 							}));
 						}
 					}
+				} else if (resource === 'lead') {
+					if (operation === 'getAll') {
+						method = 'GET';
+						endpoint = '/leads';
+
+						// Add pagination parameters
+						const limit = this.getNodeParameter('limit', i, 50) as number;
+						const page = this.getNodeParameter('page', i, 1) as number;
+						qs.limit = limit;
+						qs.page = page;
+
+						// Add additional query parameters
+						const queryParameters = this.getNodeParameter('queryParameters', i, {}) as any;
+						const additionalQs = buildQueryString(queryParameters);
+						qs = { ...qs, ...additionalQs };
+					} else if (operation === 'create') {
+						method = 'POST';
+						endpoint = '/leads';
+						const name = this.getNodeParameter('name', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as any;
+
+						// Validate required fields
+						validateLeadData(name);
+
+						// Build lead data object
+						body = {
+							name: name.trim(),
+						};
+
+						// Add additional fields if provided
+						if (additionalFields.owner_id) {
+							body.owner_id = additionalFields.owner_id;
+						}
+						if (additionalFields.website) {
+							body.website = additionalFields.website;
+						}
+						if (additionalFields.description) {
+							body.description = additionalFields.description;
+						}
+						if (additionalFields.status_id) {
+							body.status_id = additionalFields.status_id;
+						}
+						if (additionalFields.source_id) {
+							body.source_id = additionalFields.source_id;
+						}
+						if (additionalFields.size_id) {
+							body.size_id = additionalFields.size_id;
+						}
+						if (additionalFields.industry_id) {
+							body.industry_id = additionalFields.industry_id;
+						}
+						if (additionalFields.main_contact_id) {
+							body.main_contact_id = additionalFields.main_contact_id;
+						}
+						if (additionalFields.contact_name) {
+							body.contact_name = additionalFields.contact_name;
+						}
+						if (additionalFields.contact_email) {
+							body.contact_email = additionalFields.contact_email;
+						}
+						if (additionalFields.contact_phone_number) {
+							body.contact_phone_number = additionalFields.contact_phone_number;
+						}
+					}
 				} else if (resource === 'custom') {
 					endpoint = this.getNodeParameter('endpoint', i) as string;
 
@@ -923,6 +1290,25 @@ export class IDB2B implements INodeType {
 									}
 								});
 								return filteredContact;
+							})
+						};
+					}
+				}
+
+				// Apply field filtering for lead getAll operation
+				if (resource === 'lead' && operation === 'getAll') {
+					const fieldsToReturn = this.getNodeParameter('fields', i, []) as string[];
+					if (fieldsToReturn.length > 0 && Array.isArray(response.data)) {
+						processedResponse = {
+							...response,
+							data: response.data.map((lead: IDB2BLead) => {
+								const filteredLead: Partial<IDB2BLead> = {};
+								fieldsToReturn.forEach(field => {
+									if (field in lead) {
+										(filteredLead as any)[field] = (lead as any)[field];
+									}
+								});
+								return filteredLead;
 							})
 						};
 					}
