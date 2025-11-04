@@ -396,7 +396,7 @@ export class IDB2B implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'IDB2B CRM',
 		name: 'idb2b',
-		icon: 'file:idb2b.png',
+		icon: 'file:Icon.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -1275,6 +1275,18 @@ export class IDB2B implements INodeType {
 				});
 
 				let processedResponse = response;
+
+				// Enhance response for create operations
+				if (operation === 'create' && response.message === 'success' && response.data === null) {
+					processedResponse = {
+						...response,
+						data: {
+							...body,
+							created: true,
+							status: 'success'
+						}
+					};
+				}
 
 				// Apply field filtering for contact getAll operation
 				if (resource === 'contact' && operation === 'getAll') {
