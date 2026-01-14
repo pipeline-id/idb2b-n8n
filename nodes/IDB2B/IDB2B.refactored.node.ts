@@ -14,6 +14,8 @@ import { getAccessToken, secureTokenCache } from './methods/authentication';
 import { makeRequestWithRetry } from './methods/requests';
 import { validateContactData, validateLeadData, validateEmail, validateBaseUrl } from './methods/validation';
 import { buildQueryString, safeJsonParse, sanitizeErrorData } from './methods/utils';
+import { LeadService } from './services/LeadService';
+import { LeadOperations } from './handlers/LeadOperations';
 import { resourceProperty, customEndpointProperty, customJsonBodyProperty, customQueryParametersProperty } from './descriptions/sharedProperties';
 import { contactOperations, contactFields } from './descriptions/contactProperties';
 import { leadOperations, leadFields } from './descriptions/leadProperties';
@@ -149,41 +151,21 @@ export class IDB2B implements INodeType {
 				}
 				// Handle Lead operations
 				else if (resource === 'lead') {
-					if (operation === 'getAll') {
-						method = 'GET';
-						endpoint = '/leads';
+					const leadService = new LeadService({
+						executeFunctions: this,
+						credentials,
+						accessToken,
+						itemIndex: i,
+					});
 
-						const limit = this.getNodeParameter('limit', i, 50) as number;
-						const page = this.getNodeParameter('page', i, 1) as number;
-						qs.limit = limit;
-						qs.page = page;
+					const leadOperations = new LeadOperations(leadService, this, i);
+					const response = await leadOperations.execute(operation);
 
-						const queryParameters = this.getNodeParameter('queryParameters', i, {}) as any;
-						const additionalQs = buildQueryString(queryParameters);
-						qs = { ...qs, ...additionalQs };
-					} else if (operation === 'create') {
-						method = 'POST';
-						endpoint = '/leads';
-						const name = this.getNodeParameter('name', i) as string;
-						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as any;
-
-						validateLeadData(name);
-
-						body = { name: name.trim() };
-
-						// Add additional fields if provided
-						const fieldMappings = [
-							'owner_id', 'website', 'description', 'status_id', 'source_id',
-							'size_id', 'industry_id', 'main_contact_id', 'contact_name',
-							'contact_email', 'contact_phone_number'
-						];
-
-						fieldMappings.forEach(field => {
-							if (additionalFields[field]) {
-								body[field] = additionalFields[field];
-							}
-						});
-					}
+					returnData.push({
+						json: response,
+						pairedItem: { item: i },
+					});
+					continue;
 				}
 				// Handle Custom operations
 				else if (resource === 'custom') {
@@ -210,42 +192,45 @@ export class IDB2B implements INodeType {
 					qs = buildQueryString(queryParameters);
 				}
 
-				const response = await makeRequestWithRetry(this, {
-					method,
-					url: `${credentials.baseUrl}${endpoint}`,
-					headers: {
-						Authorization: `Bearer ${accessToken}`,
-					},
-					body,
-					qs,
-					json: true,
-				});
+				// Only execute request for contact and custom operations
+				if (resource === 'contact' || resource === 'custom') {
+					const response = await makeRequestWithRetry(this, {
+						method,
+						url: `${credentials.baseUrl}${endpoint}`,
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+						body,
+						qs,
+						json: true,
+					});
 
-				let processedResponse = response;
+					let processedResponse = response;
 
-				// Apply field filtering for getAll operations
-				if (operation === 'getAll') {
-					const fieldsToReturn = this.getNodeParameter('fields', i, []) as string[];
-					if (fieldsToReturn.length > 0 && Array.isArray(response.data)) {
-						processedResponse = {
-							...response,
-							data: response.data.map((item: IDB2BContact | IDB2BLead) => {
-								const filteredItem: Partial<IDB2BContact | IDB2BLead> = {};
-								fieldsToReturn.forEach(field => {
-									if (field in item) {
-										(filteredItem as any)[field] = (item as any)[field];
-									}
-								});
-								return filteredItem;
-							})
-						};
+					// Apply field filtering for contact getAll operations
+					if (resource === 'contact' && operation === 'getAll') {
+						const fieldsToReturn = this.getNodeParameter('fields', i, []) as string[];
+						if (fieldsToReturn.length > 0 && Array.isArray(response.data)) {
+							processedResponse = {
+								...response,
+								data: response.data.map((item: IDB2BContact) => {
+									const filteredItem: Partial<IDB2BContact> = {};
+									fieldsToReturn.forEach(field => {
+										if (field in item) {
+											(filteredItem as any)[field] = (item as any)[field];
+										}
+									});
+									return filteredItem;
+								})
+							};
+						}
 					}
-				}
 
-				returnData.push({
-					json: processedResponse as any,
-					pairedItem: { item: i },
-				});
+					returnData.push({
+						json: processedResponse as any,
+						pairedItem: { item: i },
+					});
+				}
 			} catch (error) {
 				if (this.continueOnFail()) {
 					let errorData: any = { error: 'Unknown error occurred' };

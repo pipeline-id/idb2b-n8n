@@ -47,6 +47,20 @@ interface IDB2BLead {
 	updated_at?: string;
 }
 
+interface IDB2BLeadActivity {
+	id?: string;
+	lead_id?: string;
+	icon?: string;
+	subject: string;
+	description?: string;
+	datetime?: string;
+	user_id?: string;
+	attachments?: string[];
+	attachments_to_delete?: string[];
+	created_at?: string;
+	updated_at?: string;
+}
+
 interface IDB2BLoginResponse {
 	data: {
 		session: {
@@ -435,6 +449,10 @@ export class IDB2B implements INodeType {
 						value: 'lead',
 					},
 					{
+						name: 'Lead Activities',
+						value: 'leadActivities',
+					},
+					{
 						name: 'Custom',
 						value: 'custom',
 					},
@@ -489,6 +507,32 @@ export class IDB2B implements INodeType {
 						value: 'create',
 						action: 'Create a lead',
 						description: 'Create a new lead',
+					},
+				],
+				default: 'getAll',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['leadActivities'],
+					},
+				},
+				options: [
+					{
+						name: 'Get All',
+						value: 'getAll',
+						action: 'Get all activities for a lead',
+						description: 'Retrieve all activities for a specific lead',
+					},
+					{
+						name: 'Create',
+						value: 'create',
+						action: 'Create a lead activity',
+						description: 'Create a new activity for a lead',
 					},
 				],
 				default: 'getAll',
@@ -895,6 +939,248 @@ export class IDB2B implements INodeType {
 				],
 			},
 			{
+				displayName: 'Lead ID',
+				name: 'lead_id',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['leadActivities'],
+						operation: ['create', 'getAll'],
+					},
+				},
+				description: 'ID of the lead to get activities for or add activity to',
+			},
+			{
+				displayName: 'Subject',
+				name: 'subject',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['leadActivities'],
+						operation: ['create'],
+					},
+				},
+				description: 'Subject of the activity',
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['leadActivities'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Icon',
+						name: 'icon',
+						type: 'string',
+						default: '',
+						description: 'Icon for the activity',
+					},
+					{
+						displayName: 'Description',
+						name: 'description',
+						type: 'string',
+						default: '',
+						description: 'Description of the activity',
+					},
+					{
+						displayName: 'Date and Time',
+						name: 'datetime',
+						type: 'string',
+						default: '',
+						placeholder: '2025-10-13T10:00:00Z',
+						description: 'Date and time of the activity (ISO format)',
+					},
+					{
+						displayName: 'User ID',
+						name: 'user_id',
+						type: 'string',
+						default: '',
+						description: 'User ID associated with the activity',
+					},
+					{
+						displayName: 'Attachments',
+						name: 'attachments',
+						type: 'fixedCollection',
+						typeOptions: {
+							multipleValues: true,
+						},
+						default: {},
+						placeholder: 'Add Attachment',
+						description: 'Attachment files for the activity',
+						options: [
+							{
+								name: 'attachment',
+								displayName: 'Attachment',
+								values: [
+									{
+										displayName: 'File Path/URL',
+										name: 'file',
+										type: 'string',
+										default: '',
+										required: true,
+									},
+								],
+							},
+						],
+					},
+					{
+						displayName: 'Attachments to Delete',
+						name: 'attachments_to_delete',
+						type: 'fixedCollection',
+						typeOptions: {
+							multipleValues: true,
+						},
+						default: {},
+						placeholder: 'Add Attachment ID',
+						description: 'Array of attachment IDs to delete (for updates)',
+						options: [
+							{
+								name: 'attachment_id',
+								displayName: 'Attachment ID',
+								values: [
+									{
+										displayName: 'ID',
+										name: 'id',
+										type: 'string',
+										default: '',
+										required: true,
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				default: 50,
+				description: 'Maximum number of activities to return',
+				displayOptions: {
+					show: {
+						resource: ['leadActivities'],
+						operation: ['getAll'],
+					},
+				},
+			},
+			{
+				displayName: 'Page',
+				name: 'page',
+				type: 'number',
+				default: 1,
+				description: 'Page number to retrieve',
+				displayOptions: {
+					show: {
+						resource: ['leadActivities'],
+						operation: ['getAll'],
+					},
+				},
+			},
+			{
+				displayName: 'Fields to Return',
+				name: 'fields',
+				type: 'multiOptions',
+				default: [],
+				description: 'Select specific fields to return (leave empty for all fields)',
+				displayOptions: {
+					show: {
+						resource: ['leadActivities'],
+						operation: ['getAll'],
+					},
+				},
+				options: [
+					{
+						name: 'ID',
+						value: 'id',
+					},
+					{
+						name: 'Lead ID',
+						value: 'lead_id',
+					},
+					{
+						name: 'Icon',
+						value: 'icon',
+					},
+					{
+						name: 'Subject',
+						value: 'subject',
+					},
+					{
+						name: 'Description',
+						value: 'description',
+					},
+					{
+						name: 'Date and Time',
+						value: 'datetime',
+					},
+					{
+						name: 'User ID',
+						value: 'user_id',
+					},
+					{
+						name: 'Attachments',
+						value: 'attachments',
+					},
+					{
+						name: 'Created At',
+						value: 'created_at',
+					},
+					{
+						name: 'Updated At',
+						value: 'updated_at',
+					},
+				],
+			},
+			{
+				displayName: 'Query Parameters',
+				name: 'queryParameters',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Parameter',
+				description: 'Additional query parameters',
+				displayOptions: {
+					show: {
+						resource: ['leadActivities'],
+						operation: ['getAll'],
+					},
+				},
+				options: [
+					{
+						name: 'parameter',
+						displayName: 'Parameter',
+						values: [
+							{
+								displayName: 'Name',
+								name: 'name',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+							},
+						],
+					},
+				],
+			},
+			{
 				displayName: 'Endpoint',
 				name: 'endpoint',
 				type: 'string',
@@ -1237,6 +1523,73 @@ export class IDB2B implements INodeType {
 							body.contact_phone_number = additionalFields.contact_phone_number;
 						}
 					}
+				} else if (resource === 'leadActivities') {
+					if (operation === 'getAll') {
+						method = 'GET';
+						const leadId = this.getNodeParameter('lead_id', i) as string;
+
+						// Validate required fields
+						if (!leadId || typeof leadId !== 'string' || leadId.trim().length === 0) {
+							throw new NodeOperationError(this.getNode(), 'Lead ID is required and must be a non-empty string', { itemIndex: i });
+						}
+
+						endpoint = `/leads/${leadId.trim()}/activities`;
+
+						// Add pagination parameters
+						const limit = this.getNodeParameter('limit', i, 50) as number;
+						const page = this.getNodeParameter('page', i, 1) as number;
+						qs.limit = limit;
+						qs.page = page;
+
+						// Add additional query parameters
+						const queryParameters = this.getNodeParameter('queryParameters', i, {}) as any;
+						const additionalQs = buildQueryString(queryParameters);
+						qs = { ...qs, ...additionalQs };
+					} else if (operation === 'create') {
+						method = 'POST';
+						const leadId = this.getNodeParameter('lead_id', i) as string;
+						const subject = this.getNodeParameter('subject', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as any;
+
+						// Validate required fields
+						if (!leadId || typeof leadId !== 'string' || leadId.trim().length === 0) {
+							throw new NodeOperationError(this.getNode(), 'Lead ID is required and must be a non-empty string', { itemIndex: i });
+						}
+						if (!subject || typeof subject !== 'string' || subject.trim().length === 0) {
+							throw new NodeOperationError(this.getNode(), 'Subject is required and must be a non-empty string', { itemIndex: i });
+						}
+
+						endpoint = `/leads/${leadId.trim()}/activities`;
+
+						// Build activity data object
+						body = {
+							subject: subject.trim(),
+						};
+
+						// Add additional fields if provided
+						if (additionalFields.icon) {
+							body.icon = additionalFields.icon;
+						}
+						if (additionalFields.description) {
+							body.description = additionalFields.description;
+						}
+						if (additionalFields.datetime) {
+							body.datetime = additionalFields.datetime;
+						}
+						if (additionalFields.user_id) {
+							body.user_id = additionalFields.user_id;
+						}
+
+						// Process attachments if provided
+						if (additionalFields.attachments && additionalFields.attachments.attachment) {
+							body.attachments = additionalFields.attachments.attachment.map((attachment: any) => attachment.file);
+						}
+
+						// Process attachments to delete if provided
+						if (additionalFields.attachments_to_delete && additionalFields.attachments_to_delete.attachment_id) {
+							body.attachments_to_delete = additionalFields.attachments_to_delete.attachment_id.map((attachment: any) => attachment.id);
+						}
+					}
 				} else if (resource === 'custom') {
 					endpoint = this.getNodeParameter('endpoint', i) as string;
 
@@ -1277,7 +1630,24 @@ export class IDB2B implements INodeType {
 				let processedResponse = response;
 
 				// Enhance response for create operations
-				if (operation === 'create' && response.message === 'success' && response.data === null) {
+				if (operation === 'create' && (resource === 'lead' || resource === 'leadActivities')) {
+					// For lead and leadActivities creation, ensure the response includes the data with ID
+					if (response.message === 'success' && response.data) {
+						// API returned actual data - use it
+						processedResponse = response;
+					} else if (response.message === 'success' && response.data === null) {
+						// Fallback: create synthetic response but try to include any ID from headers or other sources
+						processedResponse = {
+							...response,
+							data: {
+								...body,
+								created: true,
+								status: 'success'
+							}
+						};
+					}
+				} else if (operation === 'create' && response.message === 'success' && response.data === null) {
+					// Original logic for other create operations
 					processedResponse = {
 						...response,
 						data: {
@@ -1321,6 +1691,25 @@ export class IDB2B implements INodeType {
 									}
 								});
 								return filteredLead;
+							})
+						};
+					}
+				}
+
+				// Apply field filtering for leadActivities getAll operation
+				if (resource === 'leadActivities' && operation === 'getAll') {
+					const fieldsToReturn = this.getNodeParameter('fields', i, []) as string[];
+					if (fieldsToReturn.length > 0 && Array.isArray(response.data)) {
+						processedResponse = {
+							...response,
+							data: response.data.map((activity: IDB2BLeadActivity) => {
+								const filteredActivity: Partial<IDB2BLeadActivity> = {};
+								fieldsToReturn.forEach(field => {
+									if (field in activity) {
+										(filteredActivity as any)[field] = (activity as any)[field];
+									}
+								});
+								return filteredActivity;
 							})
 						};
 					}
