@@ -23,9 +23,9 @@ import { customOperations } from './descriptions/customProperties';
 
 export class IDB2B implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'IDB2B CRM',
+		displayName: 'IDB2B WhatsApp AI Agents',
 		name: 'idb2b',
-		icon: 'https://ik.imagekit.io/idb2b/idb2b.svg',
+		icon: 'file:idb2b.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
