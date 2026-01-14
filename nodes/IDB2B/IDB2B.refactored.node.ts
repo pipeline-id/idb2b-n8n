@@ -25,7 +25,7 @@ export class IDB2B implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'IDB2B CRM',
 		name: 'idb2b',
-		icon: 'file:idb2b.png',
+		icon: 'https://ik.imagekit.io/idb2b/idb2b.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',

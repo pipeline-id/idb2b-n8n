@@ -6,8 +6,8 @@ import {
 
 export class IDB2BApi implements ICredentialType {
 	name = 'idb2bApi';
-	displayName = 'IDB2B CRM';
-	documentationUrl = 'https://docs.idb2b.com';
+	displayName = 'IDB2B WhatsApp AI Agents';
+	documentationUrl = 'https://idb2b.com/en';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Email',
