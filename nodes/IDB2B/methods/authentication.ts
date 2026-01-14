@@ -160,7 +160,7 @@ export async function getAccessToken(
 			json: true,
 		});
 
-		const accessToken = loginResponse.data.session.access_token;
+		const accessToken = loginResponse.data.access_token;
 		if (!accessToken) {
 			throw new Error('No access token received from authentication response');
 		}
