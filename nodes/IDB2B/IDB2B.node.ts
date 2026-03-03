@@ -193,11 +193,11 @@ async function makeRequestWithRetry(
 			if (error.response?.status === 429) {
 				const retryAfter = error.response.headers?.['retry-after'];
 				const delay = retryAfter ? parseInt(retryAfter) * 1000 : initialDelay * Math.pow(2, attempt);
-				await new Promise(resolve => setTimeout(resolve, Math.min(delay, 30000)));
+				await new Promise(resolve => globalThis.setTimeout(resolve, Math.min(delay, 30000)));
 			} else {
 				// Exponential backoff for other errors
 				const delay = initialDelay * Math.pow(2, attempt);
-				await new Promise(resolve => setTimeout(resolve, Math.min(delay, 10000)));
+				await new Promise(resolve => globalThis.setTimeout(resolve, Math.min(delay, 10000)));
 			}
 		}
 	}
@@ -347,7 +347,7 @@ function sanitizeErrorData(data: any): any {
 
 export class IDB2B implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'IDB2B CRM',
+		displayName: 'IDB2B API',
 		name: 'idb2b',
 		icon: 'file:Icon.svg',
 		group: ['transform'],

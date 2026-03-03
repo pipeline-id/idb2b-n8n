@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-idb2b",
-  "version": "2.0.6",
+  "version": "2.0.9",
   "description": "n8n community node for IDB2B - WhatsApp AI Agents",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes/**/*.ts credentials/**/*.ts",
     "lintfix": "eslint nodes/**/*.ts credentials/**/*.ts --fix",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "npm run lint && npm run build"
   },
   "files": [
     "dist"
@@ -29,7 +30,11 @@
     "idb2b",
     "api"
   ],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pipeline-id/idb2b-n8n"
+  },
+  "author": "christmantoro <christmantoro@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.10.0",
