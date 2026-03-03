@@ -1,0 +1,127 @@
+{
+  "name": "Notion to IDB2B Contact Sync",
+  "version": 1,
+  "nodes": [
+    {
+      "parameters": {
+        "databaseId": "YOUR_NOTION_DATABASE_ID",
+        "event": "pageAdded"
+      },
+      "name": "Notion Trigger",
+      "type": "n8n-nodes-base.notionTrigger",
+      "position": [
+        440,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "notion-trigger-1"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "create",
+        "name": "={{ $node['Notion Trigger'].json.properties.Name.title[0].text.content }}",
+        "email": "={{ $node['Notion Trigger'].json.properties.Email.email }}",
+        "phone_number": "={{ $node['Notion Trigger'].json.properties.Phone.phone_number }}",
+        "additionalFields": {
+          "company": "={{ $node['Notion Trigger'].json.properties.Company.rich_text[0].text.content }}",
+          "status": "={{ $node['Notion Trigger'].json.properties.Status.select.name }}",
+          "priority": "={{ $node['Notion Trigger'].json.properties.Priority.select.name }}",
+          "estimated_value": "={{ $node['Notion Trigger'].json.properties['Estimated Value'].number }}",
+          "account_owner": "={{ $node['Notion Trigger'].json.properties['Account Owner'].rich_text[0].text.content }}",
+          "position": "={{ $node['Notion Trigger'].json.properties.Position.rich_text[0].text.content }}"
+        }
+      },
+      "name": "IDB2B Contact Create",
+      "type": "n8n-nodes-idb2b.idb2b",
+      "position": [
+        680,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "idb2b-create-1",
+      "credentials": {
+        "idb2bApi": {
+          "id": "YOUR_IDB2B_CREDENTIAL_ID",
+          "name": "IDB2B API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "databaseId": "={{ $node['Notion Trigger'].json.parent.database_id }}",
+        "pageId": "={{ $node['Notion Trigger'].json.id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Contact ID",
+              "textValue": "={{ $node['IDB2B Contact Create'].json.id }}"
+            }
+          ]
+        }
+      },
+      "name": "Update Notion with Contact ID",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        920,
+        140
+      ],
+      "typeVersion": 2,
+      "id": "notion-update-1",
+      "credentials": {
+        "notionApi": {
+          "id": "YOUR_NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Notion Trigger": {
+      "main": [
+        [
+          {
+            "node": "IDB2B Contact Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IDB2B Contact Create": {
+      "main": [
+        [
+          {
+            "node": "Update Notion with Contact ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-01-19T17:00:00.000Z",
+      "updatedAt": "2025-01-19T17:00:00.000Z",
+      "id": "tag1",
+      "name": "CRM Integration"
+    },
+    {
+      "createdAt": "2025-01-19T17:00:00.000Z",
+      "updatedAt": "2025-01-19T17:00:00.000Z",
+      "id": "tag2",
+      "name": "Notion to IDB2B"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-19T17:00:00.000Z",
+  "versionId": "1"
+}

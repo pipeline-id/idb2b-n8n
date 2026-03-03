@@ -1,12 +1,16 @@
 # n8n-nodes-idb2b
 
-This is an n8n community node for IDB2B CRM API integration with advanced features for contact management and workflow automation.
+An n8n community node for integrating with [IDB2B](https://idb2b.com) — AI Agents that turn conversations into customers for WhatsApp, Instagram & TikTok.
 
 [n8n](https://n8n.io/) is a workflow automation platform.
 
+## What is this node?
+
+IDB2B is an AI Agents platform that converts conversations into customers across WhatsApp, Instagram, and TikTok. This node lets you connect n8n to your IDB2B account to automate contact and company management — create, read, update, and delete records without writing code.
+
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n documentation.
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n documentation, or install directly:
 
 ```bash
 npm install n8n-nodes-idb2b
@@ -14,107 +18,99 @@ npm install n8n-nodes-idb2b
 
 ## Credentials
 
-Configure the following credentials in n8n:
+1. In n8n, go to **Credentials → New → IDB2B WhatsApp AI Agents**
+2. Fill in:
+   - **Email**: Your IDB2B account email
+   - **Password**: Your IDB2B account password
+   - **Base URL**: `https://api.idb2b.com` (default)
+3. Click **Test connection** to verify, then **Save**
 
-- **Email**: Your IDB2B account email
-- **Password**: Your IDB2B account password
-- **Base URL**: Your IDB2B API base URL (default: `https://api-stage.idb2b.com`)
+## Resources & Operations
 
-## Features
+### Contact
 
-### 🚀 Performance Optimizations
-- **Token Caching**: Automatic authentication token caching (1-hour cache) for 60x faster subsequent requests
-- **Field Selection**: Choose specific fields to reduce payload size and improve performance
-- **Pagination**: Efficient handling of large contact datasets
+| Operation | Description |
+|-----------|-------------|
+| Get All | Retrieve a paginated list of contacts |
+| Get | Fetch a single contact by ID |
+| Create | Create a new contact |
+| Update | Update an existing contact |
+| Delete | Delete a contact |
 
-### 🛡️ Enhanced Error Handling
-- Specific error messages for different HTTP status codes (401, 403, 404, 422, 429, 500)
-- Detailed error context with status codes and API response details
-- Graceful error recovery with continue-on-fail support
+### Company
 
-## Contact Operations
+| Operation | Description |
+|-----------|-------------|
+| Get All | Retrieve a paginated list of companies |
+| Get | Fetch a single company by ID |
+| Create | Create a new company |
+| Update | Update an existing company |
+| Delete | Delete a company |
+
+## How to Use
+
+### Basic workflow
+
+1. Add the **IDB2B CRM** node to your workflow
+2. Select your saved credential under **Credential to connect with**
+3. Choose a **Resource** (Contact or Company)
+4. Choose an **Operation** (Get All, Get, Create, Update, Delete)
+5. Fill in the required parameters and execute
 
 ### Get All Contacts
-Retrieve contacts with advanced filtering and pagination:
 
-**Parameters:**
-- **Limit**: Maximum number of contacts to return (default: 50)
-- **Page**: Page number for pagination (default: 1)
-- **Fields to Return**: Select specific fields (id, name, email, phone_number, tags, etc.)
-- **Query Parameters**: Additional custom query parameters
+- **Limit**: Number of contacts per page (default: 10)
+- **Page**: Page number (default: 1)
+- **Fields to Return**: Optionally select specific fields (id, name, email, phone_number, tags, etc.)
+- **Query Parameters**: Add any extra filters supported by the API
 
-**Supported Fields:**
-- `id` - Contact ID
-- `name` - Contact name
-- `email` - Contact email
-- `phone_number` - Phone number
-- `organization_id` - Organization ID
-- `user_id` - Associated user ID
-- `lead_id` - Associated lead ID
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
-- `favorites` - Favorite status
-- `tags` - Associated tags
+### Get All Companies
+
+- **Limit**: Number of companies per page (default: 10)
+- **Page**: Page number (default: 1)
+- **Fields to Return**: Optionally select specific fields
+- **Query Parameters**: Add any extra filters
 
 ### Create Contact
-Create new contacts with comprehensive data validation:
 
-**Required Fields:**
-- **Name**: Contact name (validated for non-empty)
-- **Email**: Contact email (validated for proper email format)
+Required:
+- **Name**: Contact full name
+- **Email**: Valid email address
 
-**Optional Fields:**
-- **Phone Number**: Contact phone number
-- **User ID**: Associate with specific user
-- **Lead ID**: Link to existing lead
-- **Favorites**: Mark as favorite (boolean)
-- **Tags**: Add multiple tags with names
+Optional (under Additional Fields):
+- Phone Number, User ID, Lead ID, Favorites, Tags
 
-**Features:**
-- ✅ Email format validation
-- ✅ Required field validation
-- ✅ Data sanitization (automatic trimming)
-- ✅ Support for all IDB2B contact fields
+### Create Company
 
-## Custom API Operations
+Required:
+- **Name**: Company name
 
-For advanced use cases, the node supports custom API requests:
-
-- **GET requests** - Custom endpoint queries
-- **POST requests** - Create resources with JSON body
-- **PUT requests** - Update resources with JSON body
-- **DELETE requests** - Delete resources
-
-**Custom Request Features:**
-- Custom endpoints specification
-- Query parameters support
-- JSON body for POST/PUT requests
-- Full HTTP method support
+Optional (under Additional Fields):
+- Any additional company fields supported by the API
 
 ## Example Workflows
 
-### 1. Paginated Contact Retrieval
+### Retrieve all contacts and companies
+
 ```
-Trigger → IDB2B (Get All Contacts)
-- Limit: 100
-- Page: 1
-- Fields: ["id", "name", "email", "tags"]
+Manual Trigger → Get all contacts → Get all companies
 ```
 
-### 2. Contact Creation with Validation
+### Sync new contacts from a webhook
+
 ```
-Webhook → IDB2B (Create Contact)
-- Name: {{$json.name}}
-- Email: {{$json.email}}
-- Phone: {{$json.phone}}
-- Tags: [{"name": "Website Lead"}]
+Webhook → IDB2B Create Contact
+  - Name: {{ $json.name }}
+  - Email: {{ $json.email }}
+  - Phone: {{ $json.phone }}
 ```
 
-### 3. Custom API Query
+### Paginate through all contacts
+
 ```
-Schedule → IDB2B (Custom GET)
-- Endpoint: /api/v1/reports/contacts
-- Query Parameters: {"from": "2024-01-01", "to": "2024-12-31"}
+Schedule Trigger → IDB2B Get All Contacts
+  - Limit: 100
+  - Page: 1
 ```
 
 ## Development
@@ -123,36 +119,29 @@ Schedule → IDB2B (Custom GET)
 # Install dependencies
 npm install
 
-# Build the project
+# Build
 npm run build
 
-# Development with watch mode
+# Watch mode
 npm run dev
 
-# Run linting
+# Lint
 npm run lint
-
-# Format code
-npm run format
 ```
 
 ## Version History
 
+### v2.0.3
+- Fixed endpoint paths (`/contacts`, `/companies`)
+- Fixed access token parsing from login response
+- Added Company resource with full CRUD operations
+
 ### v1.0.4
-- Enhanced contact operations with full API field support
-- Added pagination (limit, page) for contact retrieval
-- Implemented field selection for optimized responses
-- Added comprehensive input validation for contact creation
-- Enhanced error handling with specific HTTP status codes
-- Added token caching for improved performance
-- Updated to use modern n8n httpRequest API
+- Added pagination, field selection, and token caching
+- Enhanced error handling with HTTP status codes
 
 ### v1.0.3
-- Initial release with basic CRUD operations
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+- Initial release with basic contact CRUD operations
 
 ## License
 

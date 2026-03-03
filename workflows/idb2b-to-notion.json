@@ -1,0 +1,440 @@
+{
+  "name": "IDB2B to Notion Contact Sync",
+  "version": 1,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        240,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "schedule-trigger-1"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Get last sync timestamp from global storage\nconst lastSync = $env.LAST_SYNC_TIME || '1970-01-01T00:00:00Z';\n\nreturn [{\n  json: {\n    last_sync: lastSync,\n    current_time: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Get Last Sync Time",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        440,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "function-1"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "queryParameters": {
+          "parameter": [
+            {
+              "name": "updated_at_gte",
+              "value": "={{ $node['Get Last Sync Time'].json.last_sync }}"
+            }
+          ]
+        }
+      },
+      "name": "IDB2B Get Updated Contacts",
+      "type": "n8n-nodes-idb2b.idb2b",
+      "position": [
+        640,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "idb2b-get-1",
+      "credentials": {
+        "idb2bApi": {
+          "id": "YOUR_IDB2B_CREDENTIAL_ID",
+          "name": "IDB2B API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Any Updates?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        840,
+        140
+      ],
+      "typeVersion": 2,
+      "id": "if-1"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        1040,
+        140
+      ],
+      "typeVersion": 3,
+      "id": "split-1"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "search",
+        "databaseId": "YOUR_NOTION_DATABASE_ID",
+        "searchFilter": {
+          "singleCondition": {
+            "property": "Contact ID",
+            "type": "rich_text",
+            "rich_text": {
+              "equals": "={{ $json.id }}"
+            }
+          }
+        }
+      },
+      "name": "Check if Contact Exists in Notion",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        1240,
+        140
+      ],
+      "typeVersion": 2,
+      "id": "notion-search-1",
+      "credentials": {
+        "notionApi": {
+          "id": "YOUR_NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $node['Check if Contact Exists in Notion'].json.results.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Contact Exists?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1440,
+        140
+      ],
+      "typeVersion": 2,
+      "id": "if-2"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $node['Check if Contact Exists in Notion'].json.results[0].id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Name",
+              "title": "={{ $node['Split In Batches'].json.name }}"
+            },
+            {
+              "key": "Email",
+              "email": "={{ $node['Split In Batches'].json.email }}"
+            },
+            {
+              "key": "Phone",
+              "phone_number": "={{ $node['Split In Batches'].json.phone_number }}"
+            },
+            {
+              "key": "Company",
+              "richTextValue": "={{ $node['Split In Batches'].json.company }}"
+            },
+            {
+              "key": "Status",
+              "selectValue": "={{ $node['Split In Batches'].json.status }}"
+            },
+            {
+              "key": "Priority",
+              "selectValue": "={{ $node['Split In Batches'].json.priority }}"
+            },
+            {
+              "key": "Estimated Value",
+              "numberValue": "={{ $node['Split In Batches'].json.estimated_value }}"
+            },
+            {
+              "key": "Account Owner",
+              "richTextValue": "={{ $node['Split In Batches'].json.account_owner }}"
+            },
+            {
+              "key": "Position",
+              "richTextValue": "={{ $node['Split In Batches'].json.position }}"
+            }
+          ]
+        }
+      },
+      "name": "Update Existing Contact",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        1640,
+        60
+      ],
+      "typeVersion": 2,
+      "id": "notion-update-2",
+      "credentials": {
+        "notionApi": {
+          "id": "YOUR_NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "create",
+        "databaseId": "YOUR_NOTION_DATABASE_ID",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Name",
+              "title": "={{ $node['Split In Batches'].json.name }}"
+            },
+            {
+              "key": "Email",
+              "email": "={{ $node['Split In Batches'].json.email }}"
+            },
+            {
+              "key": "Phone",
+              "phone_number": "={{ $node['Split In Batches'].json.phone_number }}"
+            },
+            {
+              "key": "Company",
+              "richTextValue": "={{ $node['Split In Batches'].json.company }}"
+            },
+            {
+              "key": "Status",
+              "selectValue": "={{ $node['Split In Batches'].json.status }}"
+            },
+            {
+              "key": "Priority",
+              "selectValue": "={{ $node['Split In Batches'].json.priority }}"
+            },
+            {
+              "key": "Estimated Value",
+              "numberValue": "={{ $node['Split In Batches'].json.estimated_value }}"
+            },
+            {
+              "key": "Account Owner",
+              "richTextValue": "={{ $node['Split In Batches'].json.account_owner }}"
+            },
+            {
+              "key": "Position",
+              "richTextValue": "={{ $node['Split In Batches'].json.position }}"
+            },
+            {
+              "key": "Contact ID",
+              "richTextValue": "={{ $node['Split In Batches'].json.id }}"
+            }
+          ]
+        }
+      },
+      "name": "Create New Contact",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        1640,
+        220
+      ],
+      "typeVersion": 2,
+      "id": "notion-create-1",
+      "credentials": {
+        "notionApi": {
+          "id": "YOUR_NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Update the last sync timestamp\nconst currentTime = new Date().toISOString();\n\n// Store timestamp for next run\n$env.LAST_SYNC_TIME = currentTime;\n\nreturn [{\n  json: {\n    message: `Sync completed at ${currentTime}`,\n    contacts_processed: $input.all().length,\n    last_sync_updated: currentTime\n  }\n}];"
+      },
+      "name": "Update Last Sync Time",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        1840,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "function-2"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Last Sync Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Last Sync Time": {
+      "main": [
+        [
+          {
+            "node": "IDB2B Get Updated Contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IDB2B Get Updated Contacts": {
+      "main": [
+        [
+          {
+            "node": "Any Updates?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Updates?": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Check if Contact Exists in Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Contact Exists in Notion": {
+      "main": [
+        [
+          {
+            "node": "Contact Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact Exists?": {
+      "main": [
+        [
+          {
+            "node": "Update Existing Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create New Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Existing Contact": {
+      "main": [
+        [
+          {
+            "node": "Update Last Sync Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New Contact": {
+      "main": [
+        [
+          {
+            "node": "Update Last Sync Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-01-19T17:00:00.000Z",
+      "updatedAt": "2025-01-19T17:00:00.000Z",
+      "id": "tag1",
+      "name": "CRM Integration"
+    },
+    {
+      "createdAt": "2025-01-19T17:00:00.000Z",
+      "updatedAt": "2025-01-19T17:00:00.000Z",
+      "id": "tag2",
+      "name": "IDB2B to Notion"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-19T17:00:00.000Z",
+  "versionId": "1"
+}

@@ -1,0 +1,120 @@
+{
+  "name": "Test IDB2B CRM Fields",
+  "version": 1,
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        240,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "manual-trigger-1"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "create",
+        "name": "John Smith",
+        "email": "john.smith@company.com",
+        "phone_number": "555-1234",
+        "additionalFields": {
+          "company": "Future Labs",
+          "status": "Qualified",
+          "priority": "High",
+          "estimated_value": 25000,
+          "account_owner": "Ryo",
+          "position": "CEO"
+        }
+      },
+      "name": "Create Test Contact with CRM Fields",
+      "type": "n8n-nodes-idb2b.idb2b",
+      "position": [
+        480,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "idb2b-create-test",
+      "credentials": {
+        "idb2bApi": {
+          "id": "YOUR_IDB2B_CREDENTIAL_ID",
+          "name": "IDB2B API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "fields": [
+          "id",
+          "name",
+          "email",
+          "phone_number",
+          "company",
+          "status",
+          "priority",
+          "estimated_value",
+          "account_owner",
+          "position"
+        ]
+      },
+      "name": "Get All Contacts with CRM Fields",
+      "type": "n8n-nodes-idb2b.idb2b",
+      "position": [
+        720,
+        140
+      ],
+      "typeVersion": 1,
+      "id": "idb2b-get-test",
+      "credentials": {
+        "idb2bApi": {
+          "id": "YOUR_IDB2B_CREDENTIAL_ID",
+          "name": "IDB2B API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Test Contact with CRM Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Test Contact with CRM Fields": {
+      "main": [
+        [
+          {
+            "node": "Get All Contacts with CRM Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-01-19T17:00:00.000Z",
+      "updatedAt": "2025-01-19T17:00:00.000Z",
+      "id": "tag1",
+      "name": "Testing"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-19T17:00:00.000Z",
+  "versionId": "1"
+}
