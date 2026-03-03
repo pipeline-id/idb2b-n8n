@@ -481,7 +481,7 @@ export class IDB2B implements INodeType {
 							}
 						});
 					} else if (operation === 'update') {
-						method = 'PUT';
+						method = 'PATCH';
 						const contactId = this.getNodeParameter('contactId', i) as string;
 						endpoint = `/contacts/${sanitizeId(contactId)}`;
 
@@ -554,7 +554,7 @@ export class IDB2B implements INodeType {
 							}
 						});
 					} else if (operation === 'update') {
-						method = 'PUT';
+						method = 'PATCH';
 						const companyId = this.getNodeParameter('companyId', i) as string;
 						endpoint = `/companies/${sanitizeId(companyId)}`;
 

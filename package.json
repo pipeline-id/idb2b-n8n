@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-idb2b",
-  "version": "2.0.10",
+  "version": "3.0.1",
   "description": "n8n community node for IDB2B - WhatsApp AI Agents",
   "main": "index.js",
   "scripts": {
