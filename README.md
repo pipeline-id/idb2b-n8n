@@ -59,14 +59,14 @@ npm install n8n-nodes-idb2b
 
 ### Get All Contacts
 
-- **Limit**: Number of contacts per page (default: 10)
+- **Limit**: Number of contacts per page (default: 50)
 - **Page**: Page number (default: 1)
 - **Fields to Return**: Optionally select specific fields (id, name, email, phone_number, tags, etc.)
 - **Query Parameters**: Add any extra filters supported by the API
 
 ### Get All Companies
 
-- **Limit**: Number of companies per page (default: 10)
+- **Limit**: Number of companies per page (default: 50)
 - **Page**: Page number (default: 1)
 - **Fields to Return**: Optionally select specific fields
 - **Query Parameters**: Add any extra filters

@@ -6,6 +6,7 @@ import {
 	IHttpRequestMethods,
 	NodeApiError,
 	NodeOperationError,
+	sleep,
 } from 'n8n-workflow';
 import { createHash, createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { contactOperations, contactFields } from './descriptions/contactProperties';
@@ -193,11 +194,11 @@ async function makeRequestWithRetry(
 			if (error.response?.status === 429) {
 				const retryAfter = error.response.headers?.['retry-after'];
 				const delay = retryAfter ? parseInt(retryAfter) * 1000 : initialDelay * Math.pow(2, attempt);
-				await new Promise(resolve => globalThis.setTimeout(resolve, Math.min(delay, 30000)));
+				await sleep(Math.min(delay, 30000));
 			} else {
 				// Exponential backoff for other errors
 				const delay = initialDelay * Math.pow(2, attempt);
-				await new Promise(resolve => globalThis.setTimeout(resolve, Math.min(delay, 10000)));
+				await sleep(Math.min(delay, 10000));
 			}
 		}
 	}
@@ -604,7 +605,12 @@ export class IDB2B implements INodeType {
 					};
 				}
 
-				// Apply field filtering for contact getAll operation
+				// Return standardized response for delete operations (n8n UX guideline)
+			if (operation === 'delete') {
+				processedResponse = { deleted: true };
+			}
+
+			// Apply field filtering for contact getAll operation
 				if (resource === 'contact' && operation === 'getAll') {
 					const fieldsToReturn = this.getNodeParameter('fields', i, []) as string[];
 					if (fieldsToReturn.length > 0 && Array.isArray(response.data)) {
