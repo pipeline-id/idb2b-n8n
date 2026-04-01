@@ -146,12 +146,9 @@ export class IDB2B implements INodeType {
             method = "POST";
             endpoint = ENDPOINTS.CONTACTS;
             const name = this.getNodeParameter("name", i) as string;
-            const email = this.getNodeParameter("email", i) as string;
-            const phone_number = this.getNodeParameter(
-              "phone_number",
-              i,
-              "",
-            ) as string;
+            const email = (this.getNodeParameter("email", i, "") as string) || "";
+            const phone_number =
+              (this.getNodeParameter("phone_number", i, "") as string) || "";
             const additionalFields = this.getNodeParameter(
               "additionalFields",
               i,

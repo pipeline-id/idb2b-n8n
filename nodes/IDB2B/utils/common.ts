@@ -164,10 +164,9 @@ export function buildContactRequestBody(
     body.name = typeof data.name === "string" ? data.name.trim() : data.name;
   }
 
-  if (data.email !== undefined && data.email !== "") {
-    body.email =
-      typeof data.email === "string" ? data.email.trim() : data.email;
-    if (body.email === "") delete body.email;
+  if (data.email !== undefined && data.email !== null && data.email !== "") {
+    const trimmedEmail = typeof data.email === "string" ? data.email.trim() : data.email;
+    if (trimmedEmail !== "") body.email = trimmedEmail;
   }
 
   // Include phone if provided
