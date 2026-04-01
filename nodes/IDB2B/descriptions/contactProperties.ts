@@ -121,7 +121,6 @@ export const contactFields: INodeProperties[] = [
 		name: 'phone_number',
 		type: 'string',
 		default: '',
-		required: true,
 		displayOptions: {
 			show: {
 				resource: ['contact'],
