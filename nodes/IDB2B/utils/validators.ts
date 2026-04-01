@@ -49,7 +49,12 @@ export class DataValidator {
   /**
    * Validate contact creation data
    */
-  validateContactData(name: string, email?: string): ValidationResult {
+  validateContactData(
+    name: string,
+    email?: string,
+    phoneNumber?: string,
+    requirePhone = false,
+  ): ValidationResult {
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return {
         isValid: false,
@@ -69,6 +74,18 @@ export class DataValidator {
       if (!emailValidation.isValid) {
         return emailValidation;
       }
+    }
+
+    if (
+      requirePhone &&
+      (!phoneNumber ||
+        typeof phoneNumber !== "string" ||
+        phoneNumber.trim().length === 0)
+    ) {
+      return {
+        isValid: false,
+        error: "Contact phone number is required",
+      };
     }
 
     return { isValid: true };

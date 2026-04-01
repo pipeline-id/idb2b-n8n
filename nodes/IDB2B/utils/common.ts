@@ -146,6 +146,18 @@ export function buildContactRequestBody(
   includesPhone = true,
 ): Record<string, any> {
   const body: Record<string, any> = {};
+  const fieldAliases: Record<string, string> = {
+    lead_id: "company_id",
+    position: "job_title",
+    user_id: "owner_id",
+  };
+  const supportedFields = new Set([
+    "job_title",
+    "company_id",
+    "status_id",
+    "source_id",
+    "owner_id",
+  ]);
 
   // Always include name and email if provided
   if (data.name !== undefined) {
@@ -172,6 +184,38 @@ export function buildContactRequestBody(
       name: tag.name.trim(),
     }));
   }
+
+  if (Array.isArray(data.tags)) {
+    body.tags = data.tags
+      .filter((tag: any) => tag?.name)
+      .map((tag: any) => ({
+        name: typeof tag.name === "string" ? tag.name.trim() : tag.name,
+      }));
+  }
+
+  Object.entries(data).forEach(([rawKey, rawValue]) => {
+    if (
+      [
+        "name",
+        "email",
+        "phone_number",
+        "tags",
+      ].includes(rawKey)
+    ) {
+      return;
+    }
+
+    if (rawValue === undefined || rawValue === null || rawValue === "") {
+      return;
+    }
+
+    const key = fieldAliases[rawKey] ?? rawKey;
+    if (!supportedFields.has(key)) {
+      return;
+    }
+
+    body[key] = typeof rawValue === "string" ? rawValue.trim() : rawValue;
+  });
 
   return body;
 }

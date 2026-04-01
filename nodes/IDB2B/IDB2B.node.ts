@@ -158,7 +158,12 @@ export class IDB2B implements INodeType {
               {},
             ) as any;
 
-            const validation = validator.validateContactData(name, email);
+            const validation = validator.validateContactData(
+              name,
+              email,
+              phone_number,
+              true,
+            );
             if (!validation.isValid) {
               throw new Error(validation.error);
             }
@@ -188,44 +193,28 @@ export class IDB2B implements INodeType {
               {},
             ) as any;
 
-            body = {};
             if (name) {
               const validation = validator.validateContactData(name);
               if (!validation.isValid) {
                 throw new Error(validation.error);
               }
-              body.name = name.trim();
             }
             if (email) {
               const validation = validator.validateEmailField(email);
               if (!validation.isValid) {
                 throw new Error(validation.error);
               }
-              body.email = email.trim();
-            }
-            if (phone_number) {
-              body.phone_number = phone_number;
             }
 
-            // Add additional fields
-            Object.keys(additionalFields).forEach((key) => {
-              if (
-                additionalFields[key] !== undefined &&
-                additionalFields[key] !== ""
-              ) {
-                if (
-                  key === "tags" &&
-                  additionalFields.tags &&
-                  additionalFields.tags.tag
-                ) {
-                  body.tags = additionalFields.tags.tag.map((tag: any) => ({
-                    name: tag.name.trim(),
-                  }));
-                } else {
-                  body[key] = additionalFields[key];
-                }
-              }
-            });
+            body = buildContactRequestBody(
+              {
+                ...(name ? { name } : {}),
+                ...(email ? { email } : {}),
+                ...(phone_number ? { phone_number } : {}),
+                ...additionalFields,
+              },
+              true,
+            );
             initialBody = body;
           } else if (operation === "delete") {
             method = "DELETE";

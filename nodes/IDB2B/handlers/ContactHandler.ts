@@ -82,6 +82,8 @@ export class ContactHandler implements IResourceHandler {
     const validation = this.validator.validateContactData(
       params.data.name,
       params.data.email,
+      params.data.phone_number,
+      true,
     );
     if (!validation.isValid) {
       throw new Error(validation.error);
