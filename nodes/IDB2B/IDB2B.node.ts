@@ -162,7 +162,7 @@ export class IDB2B implements INodeType {
               name,
               email,
               phone_number,
-              true,
+              false,
             );
             if (!validation.isValid) {
               throw new Error(validation.error);

@@ -83,7 +83,7 @@ export class ContactHandler implements IResourceHandler {
       params.data.name,
       params.data.email,
       params.data.phone_number,
-      true,
+      false,
     );
     if (!validation.isValid) {
       throw new Error(validation.error);
