@@ -173,6 +173,7 @@ export function buildContactRequestBody(
   if (
     includesPhone &&
     data.phone_number !== undefined &&
+    data.phone_number !== null &&
     data.phone_number !== ""
   ) {
     body.phone_number = data.phone_number;
