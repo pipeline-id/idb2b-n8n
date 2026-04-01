@@ -94,6 +94,8 @@ dist/
 build/
 lib/
 
+docs
+
 # TypeScript
 *.tsbuildinfo
 
