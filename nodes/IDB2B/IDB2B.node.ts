@@ -378,9 +378,22 @@ export class IDB2B implements INodeType {
           });
           continue;
         }
-        throw new NodeOperationError(this.getNode(), error as Error, {
-          itemIndex: i,
-        });
+        let errorMsg = (error as Error).message;
+        if (
+          error instanceof Error &&
+          "response" in error &&
+          (error as any).response?.data
+        ) {
+          try {
+            const apiError = (error as any).response.data;
+            errorMsg += ` | API response: ${typeof apiError === "string" ? apiError : JSON.stringify(apiError)}`;
+          } catch {}
+        }
+        throw new NodeOperationError(
+          this.getNode(),
+          new Error(errorMsg),
+          { itemIndex: i },
+        );
       }
     }
 
