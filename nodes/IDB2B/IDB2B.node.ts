@@ -165,9 +165,8 @@ export class IDB2B implements INodeType {
               throw new Error(validation.error);
             }
 
-            const contactData: Record<string, any> = { name, ...additionalFields };
+            const contactData: Record<string, any> = { name, phone_number: phone_number || "", ...additionalFields };
             if (email) contactData.email = email;
-            if (phone_number) contactData.phone_number = phone_number;
             body = buildContactRequestBody(contactData);
             initialBody = body;
           } else if (operation === "update") {

@@ -169,14 +169,9 @@ export function buildContactRequestBody(
     if (trimmedEmail !== "") body.email = trimmedEmail;
   }
 
-  // Include phone if provided
-  if (
-    includesPhone &&
-    data.phone_number !== undefined &&
-    data.phone_number !== null &&
-    data.phone_number !== ""
-  ) {
-    body.phone_number = data.phone_number;
+  // Always include phone_number as a string (API requires it)
+  if (includesPhone) {
+    body.phone_number = (data.phone_number != null && data.phone_number !== "") ? String(data.phone_number) : "";
   }
 
   // Handle tags specially - convert from fixedCollection format
