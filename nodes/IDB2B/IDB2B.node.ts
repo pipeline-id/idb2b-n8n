@@ -306,6 +306,15 @@ export class IDB2B implements INodeType {
           }
         }
 
+        // DEBUG: remove after fix confirmed
+        if (operation === "create" && resource === "contact") {
+          throw new NodeOperationError(
+            this.getNode(),
+            new Error(`DEBUG body sent: ${JSON.stringify(body)}`),
+            { itemIndex: i },
+          );
+        }
+
         const response = await httpClient.makeRequest({
           method,
           url: `${credentials.baseUrl}${endpoint}`,
