@@ -169,9 +169,6 @@ export class IDB2B implements INodeType {
             if (email) contactData.email = email;
             if (phone_number) contactData.phone_number = phone_number;
             body = buildContactRequestBody(contactData);
-            // DEBUG: remove after fix confirmed
-            console.log('[IDB2B DEBUG] contact create body:', JSON.stringify(body));
-            console.log('[IDB2B DEBUG] raw params - email:', JSON.stringify(email), 'phone:', JSON.stringify(phone_number), 'additionalFields:', JSON.stringify(additionalFields));
             initialBody = body;
           } else if (operation === "update") {
             method = "PATCH";
@@ -304,15 +301,6 @@ export class IDB2B implements INodeType {
             const companyId = this.getNodeParameter("companyId", i) as string;
             endpoint = `${ENDPOINTS.COMPANIES}/${sanitizeId(companyId)}`;
           }
-        }
-
-        // DEBUG: remove after fix confirmed
-        if (operation === "create" && resource === "contact") {
-          throw new NodeOperationError(
-            this.getNode(),
-            new Error(`DEBUG body sent: ${JSON.stringify(body)}`),
-            { itemIndex: i },
-          );
         }
 
         const response = await httpClient.makeRequest({
