@@ -157,7 +157,40 @@ export function buildContactRequestBody(
     "status_id",
     "source_id",
     "owner_id",
+    "socials",
   ]);
+  const buildSocialId = (socialType: string, socialIdentifier: string): string => {
+    const trimmedIdentifier = socialIdentifier.trim();
+    const normalizedType = socialType.trim().toLowerCase();
+
+    if (
+      trimmedIdentifier.startsWith("http://") ||
+      trimmedIdentifier.startsWith("https://")
+    ) {
+      return trimmedIdentifier;
+    }
+
+    if (normalizedType === "linkedin") {
+      return `https://www.linkedin.com/in/${trimmedIdentifier}`;
+    }
+
+    return trimmedIdentifier;
+  };
+  const extractLinkedInIdentifier = (value: string): string => {
+    const trimmedValue = value.trim();
+
+    try {
+      const url = new URL(trimmedValue);
+      const parts = url.pathname.split("/").filter(Boolean);
+      const profileIndex = parts.findIndex((part) => ["in", "company"].includes(part));
+      const candidate =
+        profileIndex >= 0 ? parts[profileIndex + 1] : parts[parts.length - 1];
+
+      return candidate || trimmedValue;
+    } catch {
+      return trimmedValue.replace(/^@/, "");
+    }
+  };
 
   // Always include name and email if provided
   if (data.name !== undefined) {
@@ -172,6 +205,10 @@ export function buildContactRequestBody(
   // Always include phone_number as a string (API requires it)
   if (includesPhone) {
     body.phone_number = (data.phone_number != null && data.phone_number !== "") ? String(data.phone_number) : "";
+  }
+
+  if (includesPhone && data.phone_number === "") {
+    body.phone_number = "";
   }
 
   // Handle tags specially - convert from fixedCollection format
@@ -189,6 +226,54 @@ export function buildContactRequestBody(
       }));
   }
 
+  const socials: Array<{
+    social_type: string;
+    social_id: string;
+    social_identifier: string;
+  }> = [];
+
+  if (typeof data.linkedin_url === "string" && data.linkedin_url.trim()) {
+    const socialId = data.linkedin_url.trim();
+    socials.push({
+      social_type: "linkedin",
+      social_id: socialId,
+      social_identifier: extractLinkedInIdentifier(socialId),
+    });
+  }
+
+  if (data.socials && data.socials.social && Array.isArray(data.socials.social)) {
+    data.socials.social.forEach((social: any) => {
+      if (!social?.social_type || !social?.social_identifier) {
+        return;
+      }
+
+      const socialType =
+        typeof social.social_type === "string"
+          ? social.social_type.trim().toLowerCase()
+          : social.social_type;
+      const socialIdentifier =
+        typeof social.social_identifier === "string"
+          ? social.social_identifier.trim()
+          : social.social_identifier;
+      const providedSocialId =
+        typeof social.social_id === "string" ? social.social_id.trim() : "";
+
+      socials.push({
+        social_type: socialType,
+        social_id:
+          providedSocialId || buildSocialId(String(socialType), String(socialIdentifier)),
+        social_identifier:
+          socialType === "linkedin"
+            ? extractLinkedInIdentifier(String(socialIdentifier))
+            : socialIdentifier,
+      });
+    });
+  }
+
+  if (socials.length > 0) {
+    body.socials = socials;
+  }
+
   Object.entries(data).forEach(([rawKey, rawValue]) => {
     if (
       [
@@ -196,6 +281,8 @@ export function buildContactRequestBody(
         "email",
         "phone_number",
         "tags",
+        "linkedin_url",
+        "socials",
       ].includes(rawKey)
     ) {
       return;

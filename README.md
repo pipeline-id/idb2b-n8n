@@ -75,10 +75,14 @@ npm install n8n-nodes-idb2b
 
 Required:
 - **Name**: Contact full name
-- **Email**: Valid email address
 
 Optional (under Additional Fields):
-- Phone Number, User ID, Lead ID, Favorites, Tags
+- **Phone Number**: Can be blank when you only have profile data
+- **Email**: Can be blank
+- **Job Title**, **Owner ID**, **Company ID**, **Status ID**, **Source ID**
+- **LinkedIn URL**: Added as a social link payload
+- **Social Links**: Add one or more social profiles
+- **Tags**
 
 ### Create Company
 
@@ -103,6 +107,7 @@ Webhook → IDB2B Create Contact
   - Name: {{ $json.name }}
   - Email: {{ $json.email }}
   - Phone: {{ $json.phone }}
+  - Additional Fields.LinkedIn URL: {{ $json.linkedin_url }}
 ```
 
 ### Paginate through all contacts

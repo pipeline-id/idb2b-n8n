@@ -146,9 +146,12 @@ export class IDB2B implements INodeType {
             method = "POST";
             endpoint = ENDPOINTS.CONTACTS;
             const name = this.getNodeParameter("name", i) as string;
-            const email = (this.getNodeParameter("email", i, "") as string) || "";
-            const phone_number =
-              (this.getNodeParameter("phone_number", i, "") as string) || "";
+            const email = this.getNodeParameter("email", i) as string;
+            const phone_number = this.getNodeParameter(
+              "phone_number",
+              i,
+              "",
+            ) as string;
             const additionalFields = this.getNodeParameter(
               "additionalFields",
               i,
@@ -165,9 +168,12 @@ export class IDB2B implements INodeType {
               throw new Error(validation.error);
             }
 
-            const contactData: Record<string, any> = { name, phone_number: phone_number || "", ...additionalFields };
-            if (email) contactData.email = email;
-            body = buildContactRequestBody(contactData);
+            body = buildContactRequestBody({
+              name,
+              email,
+              phone_number,
+              ...additionalFields,
+            });
             initialBody = body;
           } else if (operation === "update") {
             method = "PATCH";
@@ -372,22 +378,9 @@ export class IDB2B implements INodeType {
           });
           continue;
         }
-        let errorMsg = (error as Error).message;
-        if (
-          error instanceof Error &&
-          "response" in error &&
-          (error as any).response?.data
-        ) {
-          try {
-            const apiError = (error as any).response.data;
-            errorMsg += ` | API response: ${typeof apiError === "string" ? apiError : JSON.stringify(apiError)}`;
-          } catch {}
-        }
-        throw new NodeOperationError(
-          this.getNode(),
-          new Error(errorMsg),
-          { itemIndex: i },
-        );
+        throw new NodeOperationError(this.getNode(), error as Error, {
+          itemIndex: i,
+        });
       }
     }
 

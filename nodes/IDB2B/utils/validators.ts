@@ -78,9 +78,9 @@ export class DataValidator {
 
     if (
       requirePhone &&
-      (!phoneNumber ||
-        typeof phoneNumber !== "string" ||
-        phoneNumber.trim().length === 0)
+      (phoneNumber === undefined ||
+        phoneNumber === null ||
+        typeof phoneNumber !== "string")
     ) {
       return {
         isValid: false,
