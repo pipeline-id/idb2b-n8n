@@ -130,6 +130,23 @@ export function processResponse(
     };
   }
 
+  // Merge socials from request body into create/update response data
+  // The API does not return socials in the response, so we add them back
+  if (
+    (operation === "create" || operation === "update") &&
+    response.message === "success" &&
+    response.data &&
+    requestBody?.socials
+  ) {
+    processed = {
+      ...processed,
+      data: {
+        ...processed.data,
+        socials: requestBody.socials,
+      },
+    };
+  }
+
   // Standardize delete operation response
   if (operation === "delete") {
     processed = { deleted: true };
