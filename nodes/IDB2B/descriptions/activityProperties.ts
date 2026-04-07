@@ -82,7 +82,7 @@ export const activityFields: INodeProperties[] = [
 	},
 	{
 		displayName: 'Company ID',
-		name: 'companyId',
+		name: 'getAllCompanyId',
 		type: 'string',
 		default: '',
 		required: true,

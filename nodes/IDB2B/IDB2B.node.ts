@@ -251,7 +251,7 @@ export class IDB2B implements INodeType {
               const contactId = this.getNodeParameter("getAllContactId", i) as string;
               endpoint = `/contacts/${sanitizeId(contactId)}/activities`;
             } else {
-              const companyId = this.getNodeParameter("companyId", i) as string;
+              const companyId = this.getNodeParameter("getAllCompanyId", i) as string;
               endpoint = `/leads/${sanitizeId(companyId)}/activities`;
             }
 
