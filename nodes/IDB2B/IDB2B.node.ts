@@ -259,13 +259,19 @@ export class IDB2B implements INodeType {
             qs.page = page;
           } else if (operation === "get") {
             method = "GET";
+            const activityScope = this.getNodeParameter("activityScope", i) as string;
             const activityId = this.getNodeParameter("activityId", i) as string;
-            endpoint = `${ENDPOINTS.ACTIVITIES}/${sanitizeId(activityId)}`;
+            if (activityScope === "contact") {
+              const parentContactId = this.getNodeParameter("activityParentContactId", i) as string;
+              endpoint = `/contacts/${sanitizeId(parentContactId)}/activities/${sanitizeId(activityId)}`;
+            } else {
+              const parentCompanyId = this.getNodeParameter("activityParentCompanyId", i) as string;
+              endpoint = `/leads/${sanitizeId(parentCompanyId)}/activities/${sanitizeId(activityId)}`;
+            }
           } else if (operation === "create") {
             method = "POST";
-            endpoint = ENDPOINTS.ACTIVITIES;
-            const subject = this.getNodeParameter("subject", i) as string;
             const associateWith = this.getNodeParameter("associateWith", i) as string;
+            const subject = this.getNodeParameter("subject", i) as string;
             const additionalFields = this.getNodeParameter(
               "additionalFields",
               i,
@@ -276,16 +282,14 @@ export class IDB2B implements INodeType {
               throw new Error("Subject is required to create an activity");
             }
 
-            // Must send as multipart/form-data — the /activities endpoint uses
-            // FilesInterceptor which does not parse JSON bodies reliably
             const formPayload: Record<string, any> = { subject: subject.trim() };
 
             if (associateWith === "company") {
               const companyId = this.getNodeParameter("activityCompanyId", i) as string;
-              formPayload.company_id = companyId;
+              endpoint = `/leads/${sanitizeId(companyId)}/activities`;
             } else {
               const contactId = this.getNodeParameter("activityContactId", i) as string;
-              formPayload.contact_id = contactId;
+              endpoint = `/contacts/${sanitizeId(contactId)}/activities`;
             }
 
             // Merge optional additional fields
@@ -300,8 +304,15 @@ export class IDB2B implements INodeType {
             useFormData = true;
           } else if (operation === "update") {
             method = "PATCH";
+            const activityScope = this.getNodeParameter("activityScope", i) as string;
             const activityId = this.getNodeParameter("activityId", i) as string;
-            endpoint = `${ENDPOINTS.ACTIVITIES}/${sanitizeId(activityId)}`;
+            if (activityScope === "contact") {
+              const parentContactId = this.getNodeParameter("activityParentContactId", i) as string;
+              endpoint = `/contacts/${sanitizeId(parentContactId)}/activities/${sanitizeId(activityId)}`;
+            } else {
+              const parentCompanyId = this.getNodeParameter("activityParentCompanyId", i) as string;
+              endpoint = `/leads/${sanitizeId(parentCompanyId)}/activities/${sanitizeId(activityId)}`;
+            }
             const additionalFields = this.getNodeParameter(
               "additionalFields",
               i,
@@ -320,8 +331,15 @@ export class IDB2B implements INodeType {
             useFormData = true;
           } else if (operation === "delete") {
             method = "DELETE";
+            const activityScope = this.getNodeParameter("activityScope", i) as string;
             const activityId = this.getNodeParameter("activityId", i) as string;
-            endpoint = `${ENDPOINTS.ACTIVITIES}/${sanitizeId(activityId)}`;
+            if (activityScope === "contact") {
+              const parentContactId = this.getNodeParameter("activityParentContactId", i) as string;
+              endpoint = `/contacts/${sanitizeId(parentContactId)}/activities/${sanitizeId(activityId)}`;
+            } else {
+              const parentCompanyId = this.getNodeParameter("activityParentCompanyId", i) as string;
+              endpoint = `/leads/${sanitizeId(parentCompanyId)}/activities/${sanitizeId(activityId)}`;
+            }
           }
         } else if (resource === "company") {
           if (operation === "getAll") {

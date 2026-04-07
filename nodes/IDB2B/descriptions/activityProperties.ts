@@ -14,8 +14,8 @@ export const activityOperations: INodeProperties = {
 		{
 			name: 'Get All',
 			value: 'getAll',
-			action: 'Get all activities for a company',
-			description: 'Retrieve all activities for a specific company/lead',
+			action: 'Get all activities',
+			description: 'Retrieve all activities for a specific company or contact',
 		},
 		{
 			name: 'Get',
@@ -46,6 +46,55 @@ export const activityOperations: INodeProperties = {
 };
 
 export const activityFields: INodeProperties[] = [
+	// Scope selector for get, update, delete
+	{
+		displayName: 'Scope',
+		name: 'activityScope',
+		type: 'options',
+		default: 'company',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['activity'],
+				operation: ['get', 'update', 'delete'],
+			},
+		},
+		options: [
+			{ name: 'Company (Lead)', value: 'company' },
+			{ name: 'Contact', value: 'contact' },
+		],
+		description: 'Whether this activity belongs to a company (lead) or a contact',
+	},
+	{
+		displayName: 'Company ID',
+		name: 'activityParentCompanyId',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['activity'],
+				operation: ['get', 'update', 'delete'],
+				activityScope: ['company'],
+			},
+		},
+		description: 'ID of the company (lead) that owns this activity',
+	},
+	{
+		displayName: 'Contact ID',
+		name: 'activityParentContactId',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['activity'],
+				operation: ['get', 'update', 'delete'],
+				activityScope: ['contact'],
+			},
+		},
+		description: 'ID of the contact that owns this activity',
+	},
 	// Activity ID — required for get, update, delete
 	{
 		displayName: 'Activity ID',
