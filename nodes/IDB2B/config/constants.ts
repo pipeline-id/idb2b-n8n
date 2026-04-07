@@ -70,6 +70,7 @@ export const ENDPOINTS = {
   LOGIN: "/login",
   CONTACTS: "/contacts",
   COMPANIES: "/companies",
+  ACTIVITIES: "/activities",
 };
 
 // Response Processing

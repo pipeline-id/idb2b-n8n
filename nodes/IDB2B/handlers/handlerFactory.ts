@@ -5,6 +5,7 @@
 
 import { ContactHandler } from "./ContactHandler";
 import { CompanyHandler } from "./CompanyHandler";
+import { ActivityHandler } from "./ActivityHandler";
 import { HttpClient } from "../utils/httpClient";
 import { DataValidator } from "../utils/validators";
 import { ErrorHandler } from "../utils/errorHandler";
@@ -75,6 +76,7 @@ export interface DeleteParams {
 export class HandlerFactory {
   private contactHandler: ContactHandler;
   private companyHandler: CompanyHandler;
+  private activityHandler: ActivityHandler;
 
   constructor(
     private executeFunctions: IExecuteFunctions,
@@ -92,6 +94,11 @@ export class HandlerFactory {
       validator,
       errorHandler,
     );
+    this.activityHandler = new ActivityHandler(
+      httpClient,
+      validator,
+      errorHandler,
+    );
   }
 
   /**
@@ -103,6 +110,8 @@ export class HandlerFactory {
         return this.contactHandler;
       case "company":
         return this.companyHandler;
+      case "activity":
+        return this.activityHandler;
       default:
         throw new Error(`Unknown resource: ${resource}`);
     }
@@ -112,14 +121,14 @@ export class HandlerFactory {
    * Check if resource is supported
    */
   isResourceSupported(resource: string): boolean {
-    return ["contact", "company"].includes(resource);
+    return ["contact", "company", "activity"].includes(resource);
   }
 
   /**
    * Get list of supported resources
    */
   getSupportedResources(): string[] {
-    return ["contact", "company"];
+    return ["contact", "company", "activity"];
   }
 }
 

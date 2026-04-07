@@ -14,6 +14,10 @@ import {
   companyOperations,
   companyFields,
 } from "./descriptions/companyProperties";
+import {
+  activityOperations,
+  activityFields,
+} from "./descriptions/activityProperties";
 
 // Import new utility modules
 import { defaultValidator } from "./utils/validators";
@@ -61,6 +65,10 @@ export class IDB2B implements INodeType {
         noDataExpression: true,
         options: [
           {
+            name: "Activity",
+            value: "activity",
+          },
+          {
             name: "Contact",
             value: "contact",
           },
@@ -71,8 +79,10 @@ export class IDB2B implements INodeType {
         ],
         default: "contact",
       },
+      activityOperations,
       contactOperations,
       companyOperations,
+      ...activityFields,
       ...contactFields,
       ...companyFields,
     ],
@@ -220,6 +230,75 @@ export class IDB2B implements INodeType {
             method = "DELETE";
             const contactId = this.getNodeParameter("contactId", i) as string;
             endpoint = `${ENDPOINTS.CONTACTS}/${sanitizeId(contactId)}`;
+          }
+        } else if (resource === "activity") {
+          if (operation === "getAll") {
+            method = "GET";
+            const companyId = this.getNodeParameter("companyId", i) as string;
+            const limit = this.getNodeParameter(
+              "limit",
+              i,
+              PAGINATION.DEFAULT_LIMIT,
+            ) as number;
+            const page = this.getNodeParameter(
+              "page",
+              i,
+              PAGINATION.DEFAULT_PAGE,
+            ) as number;
+            endpoint = `/leads/${sanitizeId(companyId)}/activities`;
+            qs.limit = limit;
+            qs.page = page;
+          } else if (operation === "get") {
+            method = "GET";
+            const activityId = this.getNodeParameter("activityId", i) as string;
+            endpoint = `${ENDPOINTS.ACTIVITIES}/${sanitizeId(activityId)}`;
+          } else if (operation === "create") {
+            method = "POST";
+            endpoint = ENDPOINTS.ACTIVITIES;
+            const subject = this.getNodeParameter("subject", i) as string;
+            const associateWith = this.getNodeParameter("associateWith", i) as string;
+            const additionalFields = this.getNodeParameter(
+              "additionalFields",
+              i,
+              {},
+            ) as any;
+
+            if (!subject || !subject.trim()) {
+              throw new Error("Subject is required to create an activity");
+            }
+
+            body = { subject: subject.trim(), ...additionalFields };
+
+            if (associateWith === "company") {
+              const companyId = this.getNodeParameter("activityCompanyId", i) as string;
+              body.company_id = companyId;
+            } else {
+              const contactId = this.getNodeParameter("activityContactId", i) as string;
+              body.contact_id = contactId;
+            }
+
+            initialBody = body;
+          } else if (operation === "update") {
+            method = "PATCH";
+            const activityId = this.getNodeParameter("activityId", i) as string;
+            endpoint = `${ENDPOINTS.ACTIVITIES}/${sanitizeId(activityId)}`;
+            const additionalFields = this.getNodeParameter(
+              "additionalFields",
+              i,
+              {},
+            ) as any;
+
+            body = {};
+            Object.entries(additionalFields).forEach(([key, value]) => {
+              if (value !== undefined && value !== "") {
+                body[key] = value;
+              }
+            });
+            initialBody = body;
+          } else if (operation === "delete") {
+            method = "DELETE";
+            const activityId = this.getNodeParameter("activityId", i) as string;
+            endpoint = `${ENDPOINTS.ACTIVITIES}/${sanitizeId(activityId)}`;
           }
         } else if (resource === "company") {
           if (operation === "getAll") {
