@@ -47,13 +47,23 @@ npm install n8n-nodes-idb2b
 | Update | Update an existing company |
 | Delete | Delete a company |
 
+### Activity
+
+| Operation | Description |
+|-----------|-------------|
+| Get All | Retrieve all activities for a specific company/lead |
+| Get | Fetch a single activity by ID |
+| Create | Create a new activity linked to a company or contact |
+| Update | Update an existing activity |
+| Delete | Delete an activity |
+
 ## How to Use
 
 ### Basic workflow
 
-1. Add the **IDB2B CRM** node to your workflow
+1. Add the **IDB2B API** node to your workflow
 2. Select your saved credential under **Credential to connect with**
-3. Choose a **Resource** (Contact or Company)
+3. Choose a **Resource** (Activity, Contact, or Company)
 4. Choose an **Operation** (Get All, Get, Create, Update, Delete)
 5. Fill in the required parameters and execute
 
@@ -90,7 +100,31 @@ Required:
 - **Name**: Company name
 
 Optional (under Additional Fields):
-- Any additional company fields supported by the API
+- **Website**, **Description**, **Industry ID**, **Size ID**, **Status ID**, **Source ID**, **Owner ID**
+
+### Get All Activities
+
+Required:
+- **Company ID**: The company/lead to list activities for
+- **Limit** / **Page**: Pagination controls
+
+### Create Activity
+
+Required:
+- **Subject**: Title of the activity
+- **Associate With**: Choose **Company** or **Contact**
+- **Company ID** or **Contact ID** depending on the above
+
+Optional (under Additional Fields):
+- **Description**, **Date & Time**, **Icon**, **User ID**
+
+### Update Activity
+
+Required:
+- **Activity ID**
+
+Optional (under Additional Fields):
+- Any fields to change: **Subject**, **Description**, **Date & Time**, **Icon**, **User ID**
 
 ## Example Workflows
 
@@ -108,6 +142,17 @@ Webhook → IDB2B Create Contact
   - Email: {{ $json.email }}
   - Phone: {{ $json.phone }}
   - Additional Fields.LinkedIn URL: {{ $json.linkedin_url }}
+```
+
+### Log a call activity after a deal closes
+
+```
+Webhook → IDB2B Create Activity
+  - Subject: "Call with {{ $json.contact_name }}"
+  - Associate With: Company
+  - Company ID: {{ $json.company_id }}
+  - Additional Fields.Description: {{ $json.call_notes }}
+  - Additional Fields.Date & Time: {{ $json.call_time }}
 ```
 
 ### Paginate through all contacts
@@ -135,6 +180,15 @@ npm run lint
 ```
 
 ## Version History
+
+### v3.2.5
+- Added **Activity** resource with full CRUD operations (Get All, Get, Create, Update, Delete)
+- Activities can be linked to a company or a contact
+- Get All Activities scoped to a specific company via `GET /leads/:id/activities`
+
+### v3.2.4
+- Added LinkedIn URL and social links support for contacts
+- Included socials in response data for create/update operations
 
 ### v2.0.3
 - Fixed endpoint paths (`/contacts`, `/companies`)

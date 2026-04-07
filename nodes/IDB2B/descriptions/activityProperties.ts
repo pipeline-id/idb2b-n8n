@@ -61,7 +61,25 @@ export const activityFields: INodeProperties[] = [
 		},
 		description: 'ID of the activity',
 	},
-	// Company ID — required for getAll (scoped to company), optional for create
+	// Scope selector for getAll
+	{
+		displayName: 'Scope',
+		name: 'getAllScope',
+		type: 'options',
+		default: 'company',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['activity'],
+				operation: ['getAll'],
+			},
+		},
+		options: [
+			{ name: 'Company', value: 'company' },
+			{ name: 'Contact', value: 'contact' },
+		],
+		description: 'Whether to list activities for a company or a contact',
+	},
 	{
 		displayName: 'Company ID',
 		name: 'companyId',
@@ -72,9 +90,25 @@ export const activityFields: INodeProperties[] = [
 			show: {
 				resource: ['activity'],
 				operation: ['getAll'],
+				getAllScope: ['company'],
 			},
 		},
 		description: 'ID of the company/lead to list activities for',
+	},
+	{
+		displayName: 'Contact ID',
+		name: 'getAllContactId',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['activity'],
+				operation: ['getAll'],
+				getAllScope: ['contact'],
+			},
+		},
+		description: 'ID of the contact to list activities for',
 	},
 	// Subject — required for create
 	{

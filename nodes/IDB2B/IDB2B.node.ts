@@ -122,6 +122,7 @@ export class IDB2B implements INodeType {
         let body: any = undefined;
         let qs: any = {};
         let initialBody: any = undefined;
+        let useFormData = false;
 
         if (resource === "contact") {
           if (operation === "getAll") {
@@ -234,7 +235,7 @@ export class IDB2B implements INodeType {
         } else if (resource === "activity") {
           if (operation === "getAll") {
             method = "GET";
-            const companyId = this.getNodeParameter("companyId", i) as string;
+            const getAllScope = this.getNodeParameter("getAllScope", i) as string;
             const limit = this.getNodeParameter(
               "limit",
               i,
@@ -245,7 +246,15 @@ export class IDB2B implements INodeType {
               i,
               PAGINATION.DEFAULT_PAGE,
             ) as number;
-            endpoint = `/leads/${sanitizeId(companyId)}/activities`;
+
+            if (getAllScope === "contact") {
+              const contactId = this.getNodeParameter("getAllContactId", i) as string;
+              endpoint = `/contacts/${sanitizeId(contactId)}/activities`;
+            } else {
+              const companyId = this.getNodeParameter("companyId", i) as string;
+              endpoint = `/leads/${sanitizeId(companyId)}/activities`;
+            }
+
             qs.limit = limit;
             qs.page = page;
           } else if (operation === "get") {
@@ -267,17 +276,28 @@ export class IDB2B implements INodeType {
               throw new Error("Subject is required to create an activity");
             }
 
-            body = { subject: subject.trim(), ...additionalFields };
+            // Must send as multipart/form-data — the /activities endpoint uses
+            // FilesInterceptor which does not parse JSON bodies reliably
+            const formPayload: Record<string, any> = { subject: subject.trim() };
 
             if (associateWith === "company") {
               const companyId = this.getNodeParameter("activityCompanyId", i) as string;
-              body.company_id = companyId;
+              formPayload.company_id = companyId;
             } else {
               const contactId = this.getNodeParameter("activityContactId", i) as string;
-              body.contact_id = contactId;
+              formPayload.contact_id = contactId;
             }
 
-            initialBody = body;
+            // Merge optional additional fields
+            Object.entries(additionalFields).forEach(([key, value]) => {
+              if (value !== undefined && value !== "" && key !== "subject") {
+                formPayload[key] = value;
+              }
+            });
+
+            body = formPayload;
+            initialBody = formPayload;
+            useFormData = true;
           } else if (operation === "update") {
             method = "PATCH";
             const activityId = this.getNodeParameter("activityId", i) as string;
@@ -288,13 +308,16 @@ export class IDB2B implements INodeType {
               {},
             ) as any;
 
-            body = {};
+            const updatePayload: Record<string, any> = {};
             Object.entries(additionalFields).forEach(([key, value]) => {
               if (value !== undefined && value !== "") {
-                body[key] = value;
+                updatePayload[key] = value;
               }
             });
-            initialBody = body;
+
+            body = updatePayload;
+            initialBody = updatePayload;
+            useFormData = true;
           } else if (operation === "delete") {
             method = "DELETE";
             const activityId = this.getNodeParameter("activityId", i) as string;
@@ -393,7 +416,7 @@ export class IDB2B implements INodeType {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-          body,
+          ...(useFormData ? { formData: body } : { body }),
           qs,
           json: true,
         });

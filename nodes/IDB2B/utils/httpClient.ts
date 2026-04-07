@@ -14,6 +14,7 @@ export interface RequestOptions {
   url: string;
   headers?: any;
   body?: any;
+  formData?: any;
   qs?: any;
   json?: boolean;
 }
