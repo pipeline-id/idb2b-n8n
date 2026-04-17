@@ -4,7 +4,10 @@ import {
   INodeType,
   INodeTypeDescription,
   IHttpRequestMethods,
+  NodeApiError,
   NodeOperationError,
+  NodeConnectionTypes,
+  JsonObject,
 } from "n8n-workflow";
 import {
   contactOperations,
@@ -22,7 +25,7 @@ import {
 // Import new utility modules
 import { defaultValidator } from "./utils/validators";
 import { defaultErrorHandler } from "./utils/errorHandler";
-import { HttpClient, getAccessToken } from "./utils/httpClient";
+import { HttpClient } from "./utils/httpClient";
 import { secureTokenCache } from "./utils/tokenCache";
 import {
   buildQueryString,
@@ -49,8 +52,8 @@ export class IDB2B implements INodeType {
     defaults: {
       name: "IDB2B",
     },
-    inputs: ["main"],
-    outputs: ["main"],
+    inputs: [NodeConnectionTypes.Main],
+    outputs: [NodeConnectionTypes.Main],
     credentials: [
       {
         name: "idb2bApi",
@@ -109,7 +112,6 @@ export class IDB2B implements INodeType {
       );
     }
 
-    const accessToken = await getAccessToken(this, credentials);
     const httpClient = new HttpClient(this);
 
     for (let i = 0; i < items.length; i++) {
@@ -235,7 +237,10 @@ export class IDB2B implements INodeType {
         } else if (resource === "activity") {
           if (operation === "getAll") {
             method = "GET";
-            const getAllScope = this.getNodeParameter("getAllScope", i) as string;
+            const getAllScope = this.getNodeParameter(
+              "getAllScope",
+              i,
+            ) as string;
             const limit = this.getNodeParameter(
               "limit",
               i,
@@ -248,10 +253,16 @@ export class IDB2B implements INodeType {
             ) as number;
 
             if (getAllScope === "contact") {
-              const contactId = this.getNodeParameter("getAllContactId", i) as string;
+              const contactId = this.getNodeParameter(
+                "getAllContactId",
+                i,
+              ) as string;
               endpoint = `/contacts/${sanitizeId(contactId)}/activities`;
             } else {
-              const companyId = this.getNodeParameter("getAllCompanyId", i) as string;
+              const companyId = this.getNodeParameter(
+                "getAllCompanyId",
+                i,
+              ) as string;
               endpoint = `/leads/${sanitizeId(companyId)}/activities`;
             }
 
@@ -259,18 +270,30 @@ export class IDB2B implements INodeType {
             qs.page = page;
           } else if (operation === "get") {
             method = "GET";
-            const activityScope = this.getNodeParameter("activityScope", i) as string;
+            const activityScope = this.getNodeParameter(
+              "activityScope",
+              i,
+            ) as string;
             const activityId = this.getNodeParameter("activityId", i) as string;
             if (activityScope === "contact") {
-              const parentContactId = this.getNodeParameter("activityParentContactId", i) as string;
+              const parentContactId = this.getNodeParameter(
+                "activityParentContactId",
+                i,
+              ) as string;
               endpoint = `/contacts/${sanitizeId(parentContactId)}/activities/${sanitizeId(activityId)}`;
             } else {
-              const parentCompanyId = this.getNodeParameter("activityParentCompanyId", i) as string;
+              const parentCompanyId = this.getNodeParameter(
+                "activityParentCompanyId",
+                i,
+              ) as string;
               endpoint = `/leads/${sanitizeId(parentCompanyId)}/activities/${sanitizeId(activityId)}`;
             }
           } else if (operation === "create") {
             method = "POST";
-            const associateWith = this.getNodeParameter("associateWith", i) as string;
+            const associateWith = this.getNodeParameter(
+              "associateWith",
+              i,
+            ) as string;
             const subject = this.getNodeParameter("subject", i) as string;
             const additionalFields = this.getNodeParameter(
               "additionalFields",
@@ -282,13 +305,21 @@ export class IDB2B implements INodeType {
               throw new Error("Subject is required to create an activity");
             }
 
-            const formPayload: Record<string, any> = { subject: subject.trim() };
+            const formPayload: Record<string, any> = {
+              subject: subject.trim(),
+            };
 
             if (associateWith === "company") {
-              const companyId = this.getNodeParameter("activityCompanyId", i) as string;
+              const companyId = this.getNodeParameter(
+                "activityCompanyId",
+                i,
+              ) as string;
               endpoint = `/leads/${sanitizeId(companyId)}/activities`;
             } else {
-              const contactId = this.getNodeParameter("activityContactId", i) as string;
+              const contactId = this.getNodeParameter(
+                "activityContactId",
+                i,
+              ) as string;
               endpoint = `/contacts/${sanitizeId(contactId)}/activities`;
             }
 
@@ -304,13 +335,22 @@ export class IDB2B implements INodeType {
             useFormData = true;
           } else if (operation === "update") {
             method = "PATCH";
-            const activityScope = this.getNodeParameter("activityScope", i) as string;
+            const activityScope = this.getNodeParameter(
+              "activityScope",
+              i,
+            ) as string;
             const activityId = this.getNodeParameter("activityId", i) as string;
             if (activityScope === "contact") {
-              const parentContactId = this.getNodeParameter("activityParentContactId", i) as string;
+              const parentContactId = this.getNodeParameter(
+                "activityParentContactId",
+                i,
+              ) as string;
               endpoint = `/contacts/${sanitizeId(parentContactId)}/activities/${sanitizeId(activityId)}`;
             } else {
-              const parentCompanyId = this.getNodeParameter("activityParentCompanyId", i) as string;
+              const parentCompanyId = this.getNodeParameter(
+                "activityParentCompanyId",
+                i,
+              ) as string;
               endpoint = `/leads/${sanitizeId(parentCompanyId)}/activities/${sanitizeId(activityId)}`;
             }
             const additionalFields = this.getNodeParameter(
@@ -331,13 +371,22 @@ export class IDB2B implements INodeType {
             useFormData = true;
           } else if (operation === "delete") {
             method = "DELETE";
-            const activityScope = this.getNodeParameter("activityScope", i) as string;
+            const activityScope = this.getNodeParameter(
+              "activityScope",
+              i,
+            ) as string;
             const activityId = this.getNodeParameter("activityId", i) as string;
             if (activityScope === "contact") {
-              const parentContactId = this.getNodeParameter("activityParentContactId", i) as string;
+              const parentContactId = this.getNodeParameter(
+                "activityParentContactId",
+                i,
+              ) as string;
               endpoint = `/contacts/${sanitizeId(parentContactId)}/activities/${sanitizeId(activityId)}`;
             } else {
-              const parentCompanyId = this.getNodeParameter("activityParentCompanyId", i) as string;
+              const parentCompanyId = this.getNodeParameter(
+                "activityParentCompanyId",
+                i,
+              ) as string;
               endpoint = `/leads/${sanitizeId(parentCompanyId)}/activities/${sanitizeId(activityId)}`;
             }
           }
@@ -431,9 +480,6 @@ export class IDB2B implements INodeType {
         const response = await httpClient.makeRequest({
           method,
           url: `${credentials.baseUrl}${endpoint}`,
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
           ...(useFormData ? { formData: body } : { body }),
           qs,
           json: true,
@@ -498,7 +544,7 @@ export class IDB2B implements INodeType {
           });
           continue;
         }
-        throw new NodeOperationError(this.getNode(), error as Error, {
+        throw new NodeApiError(this.getNode(), error as JsonObject, {
           itemIndex: i,
         });
       }

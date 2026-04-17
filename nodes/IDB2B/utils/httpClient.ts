@@ -17,6 +17,7 @@ export interface RequestOptions {
   formData?: any;
   qs?: any;
   json?: boolean;
+  skipAuth?: boolean;
 }
 
 export interface HttpClientConfig {
@@ -49,7 +50,14 @@ export class HttpClient {
 
     for (let attempt = 0; attempt <= this.config.maxRetries; attempt++) {
       try {
-        return await this.executeFunctions.helpers.httpRequest(options);
+        if (options.skipAuth) {
+          return await this.executeFunctions.helpers.httpRequest(options);
+        }
+        return await this.executeFunctions.helpers.httpRequestWithAuthentication.call(
+          this.executeFunctions,
+          "idb2bApi",
+          options,
+        );
       } catch (error: any) {
         lastError = error;
 
@@ -151,6 +159,7 @@ export async function getAccessToken(
         password: credentials.password,
       },
       json: true,
+      skipAuth: true,
     });
 
     // Try to extract token from various possible response formats
