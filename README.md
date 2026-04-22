@@ -22,7 +22,7 @@ npm install n8n-nodes-idb2b
 2. Fill in:
    - **Email**: Your IDB2B account email
    - **Password**: Your IDB2B account password
-   - **Base URL**: `https://api.idb2b.com` (default)
+   - **Base URL**: `https://api.idb2b.com` (default) — use `https://api-stage.idb2b.com` for the staging environment
 3. Click **Test connection** to verify, then **Save**
 
 ## Resources & Operations
@@ -51,7 +51,7 @@ npm install n8n-nodes-idb2b
 
 | Operation | Description |
 |-----------|-------------|
-| Get All | Retrieve all activities for a specific company/lead |
+| Get All | Retrieve all activities for a specific company or contact |
 | Get | Fetch a single activity by ID |
 | Create | Create a new activity linked to a company or contact |
 | Update | Update an existing activity |
@@ -105,7 +105,8 @@ Optional (under Additional Fields):
 ### Get All Activities
 
 Required:
-- **Company ID**: The company/lead to list activities for
+- **Scope**: Choose **Company** or **Contact**
+- **Company ID** or **Contact ID** depending on the scope selected
 - **Limit** / **Page**: Pagination controls
 
 ### Create Activity
@@ -118,12 +119,14 @@ Required:
 Optional (under Additional Fields):
 - **Description**, **Date & Time**, **Icon**, **User ID**
 
-### Update Activity
+### Get / Update / Delete Activity
 
 Required:
+- **Scope**: Choose **Company** or **Contact**
+- **Company ID** or **Contact ID** (parent of the activity)
 - **Activity ID**
 
-Optional (under Additional Fields):
+Optional for Update (under Additional Fields):
 - Any fields to change: **Subject**, **Description**, **Date & Time**, **Icon**, **User ID**
 
 ## Example Workflows
@@ -181,10 +184,17 @@ npm run lint
 
 ## Version History
 
+### v3.3.0
+- Fixed n8n guideline compliance issues: proper `NodeConnectionTypes`, `NodeApiError`, removed redundant `getAccessToken` call from node execute
+- Added credential SVG icon and moved authentication to credentials layer
+- Added GitHub Actions publish workflow
+- Staging environment URL (`https://api-stage.idb2b.com`) documented in credentials
+
 ### v3.2.5
 - Added **Activity** resource with full CRUD operations (Get All, Get, Create, Update, Delete)
 - Activities can be linked to a company or a contact
-- Get All Activities scoped to a specific company via `GET /leads/:id/activities`
+- Get All Activities supports both company and contact scopes
+- Get, Update, and Delete operations require a **Scope** selector (Company or Contact)
 
 ### v3.2.4
 - Added LinkedIn URL and social links support for contacts

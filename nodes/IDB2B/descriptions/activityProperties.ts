@@ -60,10 +60,10 @@ export const activityFields: INodeProperties[] = [
 			},
 		},
 		options: [
-			{ name: 'Company (Lead)', value: 'company' },
+			{ name: 'Company', value: 'company' },
 			{ name: 'Contact', value: 'contact' },
 		],
-		description: 'Whether this activity belongs to a company (lead) or a contact',
+		description: 'Whether this activity belongs to a company or a contact',
 	},
 	{
 		displayName: 'Company ID',
@@ -78,7 +78,7 @@ export const activityFields: INodeProperties[] = [
 				activityScope: ['company'],
 			},
 		},
-		description: 'ID of the company (lead) that owns this activity',
+		description: 'ID of the company that owns this activity',
 	},
 	{
 		displayName: 'Contact ID',
@@ -142,7 +142,7 @@ export const activityFields: INodeProperties[] = [
 				getAllScope: ['company'],
 			},
 		},
-		description: 'ID of the company/lead to list activities for',
+		description: 'ID of the company to list activities for',
 	},
 	{
 		displayName: 'Contact ID',
@@ -206,7 +206,7 @@ export const activityFields: INodeProperties[] = [
 				associateWith: ['company'],
 			},
 		},
-		description: 'ID of the company/lead to associate this activity with',
+		description: 'ID of the company to associate this activity with',
 	},
 	{
 		displayName: 'Contact ID',
